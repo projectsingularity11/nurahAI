@@ -10,10 +10,7 @@
       "supportsTablet": true,
       "infoPlist": {
         "CFBundleAllowMixedLocalizations": true,
-        "CFBundleLocalizations": [
-          "en",
-          "ar"
-        ]
+        "CFBundleLocalizations": ["en", "ar"]
       }
     },
     "android": {
