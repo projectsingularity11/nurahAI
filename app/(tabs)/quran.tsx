@@ -22,15 +22,45 @@ export default function Quran() {
   const { t } = useLanguage();
   const params = useLocalSearchParams<{ surah?: string; ayah?: string }>();
   const [surahs, setSurahs] = useState<Surah[]>([]);
-  const [selected, setSelected] = useState<number | null>(null);
+  const routeSurah = Number(params.surah);
+  const validRouteSurah =
+    Number.isInteger(routeSurah) && routeSurah >= 1 && routeSurah <= 114
+      ? routeSurah
+      : null;
+  const routeAyah = Math.max(1, Math.floor(Number(params.ayah) || 1));
+  const [routePosition, setRoutePosition] = useState({
+    surah: params.surah,
+    ayah: params.ayah,
+  });
+  const [selected, setSelected] = useState<number | null>(validRouteSurah);
   const [ayahs, setAyahs] = useState<Ayah[]>([]);
   const [query, setQuery] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [loadedRequest, setLoadedRequest] = useState<string | null>(null);
+  const [requestError, setRequestError] = useState<{
+    key: string;
+    message: string;
+  } | null>(null);
   const [isCached, setCached] = useState(false);
   const [jump, setJump] = useState("");
-  const [targetAyah, setTargetAyah] = useState(1);
+  const [targetAyah, setTargetAyah] = useState(routeAyah);
   const [revision, setRevision] = useState(0);
+  const requestKey = `${selected ?? "index"}:${revision}`;
+  const loading = loadedRequest !== requestKey;
+  const error = requestError?.key === requestKey ? requestError.message : "";
+  function setError(message: string) {
+    setRequestError({ key: requestKey, message });
+  }
+  // Adjust the reader when navigation supplies a new last-read/bookmark position.
+  if (
+    routePosition.surah !== params.surah ||
+    routePosition.ayah !== params.ayah
+  ) {
+    setRoutePosition({ surah: params.surah, ayah: params.ayah });
+    if (validRouteSurah !== null) {
+      setSelected(validRouteSurah);
+      setTargetAyah(routeAyah);
+    }
+  }
   const list = useRef<FlatList<Ayah>>(null);
   const requestToken = useRef(0);
   const records = useApp((s) => s.records);
@@ -39,31 +69,16 @@ export default function Quran() {
   const owner = useApp((s) => s.owner);
   const audio = useAudio();
   const stopAudio = audio.stop;
-  // A stable callback ensures the player stops on tab navigation, not each render.
-  const stopRef = useRef(stopAudio);
-  stopRef.current = stopAudio;
   useFocusEffect(
     useCallback(
       () => () => {
-        void stopRef.current();
+        void stopAudio();
       },
-      [],
+      [stopAudio],
     ),
   );
   useEffect(() => {
-    if (
-      params.surah &&
-      Number(params.surah) >= 1 &&
-      Number(params.surah) <= 114
-    ) {
-      setSelected(Number(params.surah));
-      setTargetAyah(Math.max(1, Number(params.ayah) || 1));
-    }
-  }, [params.surah, params.ayah]);
-  useEffect(() => {
     const token = ++requestToken.current;
-    setLoading(true);
-    setError("");
     const request = selected ? getSurah(selected) : getSurahs();
     void request
       .then((result) => {
@@ -81,7 +96,7 @@ export default function Quran() {
           );
       })
       .finally(() => {
-        if (token === requestToken.current) setLoading(false);
+        if (token === requestToken.current) setLoadedRequest(requestKey);
       });
     return () => {
       requestToken.current = token + 1;

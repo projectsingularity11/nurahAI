@@ -1,9 +1,13 @@
-import type { BottomTabBarProps } from "@react-navigation/bottom-tabs";
+import type { ComponentProps } from "react";
+import type { Tabs } from "expo-router";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { Pressable, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useLanguage } from "../lib/i18n";
 import { colors } from "./ui";
+type BottomTabBarProps = Parameters<
+  NonNullable<ComponentProps<typeof Tabs>["tabBar"]>
+>[0];
 const icons: Record<string, keyof typeof Ionicons.glyphMap> = {
   home: "grid-outline",
   prayer: "moon-outline",
