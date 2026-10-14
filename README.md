@@ -2,11 +2,11 @@
 
 Nurah is a Muslim-focused daily companion for prayer, Qur’an, remembrance, learning, and small meaningful habits. It is a study and organization tool and **does not issue fatwas**.
 
-This repository implements **Part 1 only** with Expo SDK 54, Expo Router, strict TypeScript, NativeWind/Tailwind, Zustand, and Supabase. The interface uses a charcoal/deep-green palette, subtle gold, high-contrast text, and switchable English/Arabic with RTL layout. The excluded features in [MVP_SCOPE.md](MVP_SCOPE.md) remain excluded.
+This repository implements **Part 1 only** with Expo SDK 57, Expo Router, strict TypeScript, NativeWind/Tailwind, Zustand, and Supabase. The interface uses a charcoal/deep-green palette, subtle gold, high-contrast text, and switchable English/Arabic with RTL layout. The excluded features in [MVP_SCOPE.md](MVP_SCOPE.md) remain excluded.
 
 ## Run locally
 
-Use Node 22 LTS or newer and npm. From the repository root:
+Use Node 22 LTS (22.13.0 or newer) or a supported Node 24 LTS release, and npm. From the repository root:
 
 ```bash
 npm ci
@@ -22,9 +22,42 @@ npm run android
 npm run ios
 ```
 
-`ios` requires macOS and an iOS simulator. The native dependencies target **SDK 54**; use an SDK-54-compatible Expo Go client or development build. Expo AV was specifically requested and is deprecated upstream; upgrading Expo will require moving playback to Expo Audio.
+`ios` requires macOS and an iOS simulator. The native dependencies target **SDK 57** (Expo package **57.0.28**, React **19.2.3**, React Native **0.86.3**). Use your SDK-57-compatible Expo Go app. Qur’an playback uses **Expo Audio** because Expo AV is no longer supported by the current SDK.
 
 No environment values are required for **local guest mode**. Guest progress persists on this device and is separate from account progress. Configure Supabase to enable email/password accounts and private cloud sync.
+
+## Test on your phone with Expo Go SDK 57
+
+Run these commands on your own computer in the repository checkout:
+
+```bash
+git fetch origin
+git switch upgrade/expo-sdk-57
+git pull --ff-only
+npm ci
+npx expo start --go --clear --lan
+```
+
+Keep the computer and phone on the same Wi-Fi network. Open Expo Go and scan the Metro QR (Android), or use the Camera app to open the QR in Expo Go (iPhone). Allow local-network access on iOS if prompted. Keep Metro running. Guest mode needs no credentials. For accounts, keep your existing `.env`, or copy `.env.example` only if `.env` does not exist, fill the two public Supabase values, and restart Metro.
+
+If LAN access is blocked by the network, use:
+
+```bash
+npx expo start --go --clear --tunnel
+```
+
+Expo CLI may offer to install its optional tunnel helper. For local Supabase on a physical phone, use your computer's LAN IP in the Supabase URL rather than `localhost`, or use a hosted Supabase project.
+
+Check these flows on the phone:
+
+1. Complete guest onboarding; allow GPS or use manual coordinates. Check all prayer calculation methods, countdown, Qibla bearing, mosque overrides, and prayer logs.
+2. Start Salah Focus manually, finish, add a reflection, and confirm the session is saved. Optionally scan a QR containing `nurah://prayer-mat`.
+3. Open a surah, play/stop a verse, switch tabs to confirm playback stops, bookmark an ayah, and mark it read. Reopen the app to check guest progress remains.
+4. Use dhikr and both adhkar checklists; add/complete/delete tasks and complete a daily habit.
+5. Switch to Arabic to check RTL. Ask the assistant a planning question and a personal-ruling question to verify source panels and refusal.
+6. If Supabase is configured, sign in and verify cloud synchronization and account/guest separation.
+
+A bundle export checks native code compilation, but physical GPS/camera/audio and Supabase account behavior still require this device acceptance pass.
 
 ## Environment
 
@@ -59,6 +92,8 @@ No hosted project is created or modified by this repository. Configure the Auth 
 ## Validation and web deployment
 
 ```bash
+npx expo install --fix
+npx expo-doctor
 npm run typecheck
 npm run lint
 npm test
@@ -94,7 +129,7 @@ The test config uses `/usr/bin/chromium` if installed, or Playwright's downloade
 - Shared Screen, Card, Button, TextInput, SectionHeader, ProgressRing, EmptyState, ErrorState, and LoadingState.
 - Prayer calculations on-device with `adhan`: ISNA, MWL, Umm al-Qura, Egyptian, Karachi, Dubai; countdown, true-north Qibla bearing, GPS/manual coordinates, mosque-time overrides, and prayed/late/missed logs.
 - Salah Focus: optional QR mat scan (`nurah://prayer-mat` or `nurah://prayer-mat/<id>`), manual fallback, elapsed timer, optional reflection, focus-session save, and prayer-log update.
-- Qur’an index and reader: Uthmani Arabic, Saheeh International English, Mishary Alafasy per-verse audio via Expo AV, bookmarks, explicit last-read tracking, ayah navigation, and cached text fallback.
+- Qur’an index and reader: Uthmani Arabic, Saheeh International English, Mishary Alafasy per-verse audio via Expo Audio, bookmarks, explicit last-read tracking, ayah navigation, and cached text fallback.
 - Clearly labeled daily hadith seed excerpt with Arabic/English, collection, number, narrator, grade, and source link.
 - Persistent tasbih counter, sourced morning/evening starter checklist, daily habits/streaks, and task add/complete/delete.
 - Supabase email/password auth, account-isolated local caches, durable latest-mutation queue with delete tombstones, retryable sync, private Storage helpers, and all data-model types.
@@ -111,6 +146,12 @@ The test config uses `/usr/bin/chromium` if installed, or Playwright's downloade
 - **Offline:** local progress persists and account writes queue, but there is no installable offline web shell/service worker. QR/location need real-device permission tests. Focus sessions are saved on completion, not recovered after process termination; they do not block other apps.
 - **Sync:** a single-device latest-write flow, not conflict resolution for simultaneous edits on several devices. Guest data is not automatically imported into accounts. Local account caches are not encrypted; shared-device users should clear app/site data.
 - **Verification:** automated tests exercise guest user flows, prayer math, dates/streaks, guardrails, account isolation, and actual Postgres RLS/Storage policies with Supabase auth/storage primitives modeled in PGlite. Browser Qur’an tests use HTTP fixtures. No live Supabase account, physical QR scan, GPS sensor, NFC, or live audio has been certified.
+
+## SDK 57 validation
+
+The upgrade uses Expo **57.0.28**, React **19.2.3**, React Native **0.86.3**, and the SDK 57 versions selected by Expo tooling. A clean `npm ci`, typecheck, lint, unit/database/audio tests, web export, and native bundle exports are verified. The browser suite also exercises actual fixture audio decoding, navigation cleanup, end-of-track handling, and failed loads.
+
+In the managed build environment, the online `npx expo install --fix` lookup is blocked by network policy. Running `EXPO_OFFLINE=1 npx expo install --fix` uses the installed SDK's bundled version map and reports all dependencies up to date. Expo Doctor reports **19/21 checks passing**: the app-schema lookup and React Native Directory metadata check cannot reach their external services. The missing Expo Asset peer dependency was fixed; no local compatibility findings remain. These online checks are **not claimed as passing**. Run `npx expo-doctor` locally with normal Internet access to complete them before release.
 
 ## Recommended next task
 

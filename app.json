@@ -37,7 +37,18 @@
         }
       ],
       "expo-localization",
-      "expo-font"
+      "expo-font",
+      "expo-status-bar",
+      [
+        "expo-audio",
+        {
+          "microphonePermission": false,
+          "recordAudioAndroid": false,
+          "enableBackgroundRecording": false,
+          "enableBackgroundPlayback": false
+        }
+      ],
+      "expo-asset"
     ],
     "extra": {
       "supportsRTL": true
