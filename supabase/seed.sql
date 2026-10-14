@@ -1,0 +1,2 @@
+-- User tables intentionally start empty. Never seed one user's private records.
+-- The clearly labeled fixed hadith excerpt lives in src/data/hadith.ts.
