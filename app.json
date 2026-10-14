@@ -1,11 +1,49 @@
 {
   "expo": {
-    "name": "Nurah AI", "slug": "nurah-ai", "scheme": "nurah", "version": "1.0.0",
-    "orientation": "portrait", "userInterfaceStyle": "dark",
-    "ios": { "supportsTablet": true, "infoPlist": { "CFBundleAllowMixedLocalizations": true, "CFBundleLocalizations": ["en", "ar"] } },
-    "android": { "package": "com.nurahai.app" },
-    "web": { "bundler": "metro", "output": "single", "name": "Nurah AI" },
-    "plugins": ["expo-router", ["expo-location", {"locationWhenInUsePermission": "Allow Nurah to calculate prayer times on your device. Your location is not uploaded."}], ["expo-camera", {"cameraPermission": "Scan your prayer mat QR code to begin Salah Focus.", "recordAudioAndroid": false}], "expo-localization"],
-    "extra": { "supportsRTL": true }
+    "name": "Nurah AI",
+    "slug": "nurah-ai",
+    "scheme": "nurah",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "dark",
+    "ios": {
+      "supportsTablet": true,
+      "infoPlist": {
+        "CFBundleAllowMixedLocalizations": true,
+        "CFBundleLocalizations": [
+          "en",
+          "ar"
+        ]
+      }
+    },
+    "android": {
+      "package": "com.nurahai.app"
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "single",
+      "name": "Nurah AI"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Allow Nurah to calculate prayer times on your device. Your location is not uploaded."
+        }
+      ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Scan your prayer mat QR code to begin Salah Focus.",
+          "recordAudioAndroid": false
+        }
+      ],
+      "expo-localization",
+      "expo-font"
+    ],
+    "extra": {
+      "supportsRTL": true
+    }
   }
 }

@@ -29,12 +29,12 @@ export const useApp = create<AppState>()(persist((set, get) => ({
   put: (table, row) => set((s) => {
     if (row.user_id !== s.owner) return {};
     const rows = s.records[table].filter((r) => r.id !== row.id);
-    return { records: { ...s.records, [table]: [...rows, row] }, pending: [...s.pending, { id: id(), table, row, operation: 'upsert' }] };
+    return { records: { ...s.records, [table]: [...rows, row] }, pending: s.owner === 'guest' ? [] : [...s.pending.filter((m) => m.table !== table || m.row.id !== row.id), { id: id(), table, row, operation: 'upsert' }] };
   }),
   remove: (table, rowId) => set((s) => {
     const row = s.records[table].find((r) => r.id === rowId);
     if (!row) return {};
-    return { records: { ...s.records, [table]: s.records[table].filter((r) => r.id !== rowId) }, pending: [...s.pending, { id: id(), table, row, operation: 'delete' }] };
+    return { records: { ...s.records, [table]: s.records[table].filter((r) => r.id !== rowId) }, pending: s.owner === 'guest' ? [] : [...s.pending.filter((m) => m.table !== table || m.row.id !== row.id), { id: id(), table, row, operation: 'delete' }] };
   }),
 }), {
   name: 'nurah-part1-v1', storage: createJSONStorage(() => storage),
